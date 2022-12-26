@@ -4,20 +4,9 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-// eslint-disable-next-line no-unused-vars
-const allowedDomains = [
-  'https://v2.sg.media-imdb.com',
-  'https://gomo.to',
-  'https://lookmovie.io',
-  'https://gomoplayer.com',
-  'https://api.opensubtitles.org',
-  'https://www.vmovee.watch',
-];
-
 async function handleRequest(request, destinationUrl, iteration = 0) {
   console.log(
-    `PROXYING ${destinationUrl}${
-      iteration ? ' ON ITERATION ' + iteration : ''
+    `PROXYING ${destinationUrl}${iteration ? ' ON ITERATION ' + iteration : ''
     }`,
   );
 
@@ -134,13 +123,6 @@ addEventListener('fetch', (event) => {
       }),
     );
   }
-  // else if (!allowedDomains.find(domain => destinationUrl.startsWith(domain))) {
-  // 	event.respondWith(
-  // 		new Response('404 Not Found', {
-  // 			status: 404,
-  // 		}),
-  // 	);
-  // }
   else if (
     request.method === 'GET' ||
     request.method === 'HEAD' ||
