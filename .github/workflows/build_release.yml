@@ -9,46 +9,46 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    
-    - name: Install Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 16
-    
-    - name: Install NPM packages
-      run: npm install
-    
-    - name: Build project
-      run: npm run build
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Upload production-ready build files
-      uses: actions/upload-artifact@v3
-      with:
-        name: worker.js
-        path: ./dist/worker.js
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Simple Proxy Worker
-        draft: false
-        prerelease: false
-        
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/worker.js
-        asset_name: worker.js
-        asset_content_type: text/javascript
+      - name: Install NPM packages
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: worker.js
+          path: ./dist/worker.js
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Simple Proxy Worker
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/worker.js
+          asset_name: worker.js
+          asset_content_type: text/javascript
