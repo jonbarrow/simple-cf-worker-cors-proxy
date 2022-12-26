@@ -6,7 +6,8 @@ const corsHeaders = {
 
 async function handleRequest(request, destinationUrl, iteration = 0) {
   console.log(
-    `PROXYING ${destinationUrl}${iteration ? ' ON ITERATION ' + iteration : ''
+    `PROXYING ${destinationUrl}${
+      iteration ? ' ON ITERATION ' + iteration : ''
     }`,
   );
 
@@ -122,8 +123,7 @@ addEventListener('fetch', (event) => {
         },
       }),
     );
-  }
-  else if (
+  } else if (
     request.method === 'GET' ||
     request.method === 'HEAD' ||
     request.method === 'POST'
