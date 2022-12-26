@@ -33,22 +33,11 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: latest
-        release_name: Simple Proxy Worker
-        draft: false
-        prerelease: false
-        
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/worker.js
-        asset_name: worker.js
-        asset_content_type: text/javascript
+        allowUpdates: true
+        artifacts: ./dist/worker.js
+        artifactContentType: text/javascript
+        replacesArtifacts: true
+        tag: latest
+        name: Simple Proxy Worker
