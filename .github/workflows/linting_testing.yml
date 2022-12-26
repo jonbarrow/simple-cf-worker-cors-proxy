@@ -37,6 +37,6 @@ jobs:
           report-json: "eslint_report.json"
 
       - name: Build Project
-        run: npm build
+        run: npm run build
 
       
