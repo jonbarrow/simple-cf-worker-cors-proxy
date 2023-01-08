@@ -59,11 +59,9 @@ async function handleRequest(oRequest, destination, iteration = 0) {
   ) {
     // Server tried to redirect too many times
     if (iteration > 5) {
-      return event.respondWith(
-        new Response('418 Too many redirects', {
-          status: 418,
-        }),
-      );
+      return new Response('418 Too many redirects', {
+        status: 418,
+      });
     }
 
     // Handle and return the request for the redirected destination
