@@ -4,66 +4,100 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-async function handleRequest(request, destinationUrl, iteration = 0) {
+async function handleRequest(oRequest, destination, iteration = 0) {
   console.log(
-    `PROXYING ${destinationUrl}${
-      iteration ? ' ON ITERATION ' + iteration : ''
-    }`,
+    `PROXYING ${destination}${iteration ? ' ON ITERATION ' + iteration : ''}`,
   );
 
-  // Rewrite request to point to API url. This also makes the request mutable
-  // so we can add the correct Origin header to make the API server think
-  // that this request isn't cross-site.
-  request = new Request(destinationUrl, request);
-  request.headers.set('Origin', new URL(destinationUrl).origin);
+  // Create a new mutable request object for the destination
+  const request = new Request(destination, oRequest);
+  request.headers.set('Origin', new URL(destination).origin);
+
+  // TODO - Make cookie handling better. PHPSESSID overwrites all other cookie related headers
+
+  // Add custom X headers from client
+  // These headers are usually forbidden to be set by fetch
+  if (oRequest.headers.has('X-Cookie')) {
+    request.headers.set('Cookie', oRequest.headers.get('X-Cookie'));
+    request.headers.delete('X-Cookie');
+  }
+
+  if (request.headers.has('X-Referer')) {
+    request.headers.set('Referer', request.headers.get('X-Referer'));
+    request.headers.delete('X-Referer');
+  }
+
+  if (request.headers.has('X-Origin')) {
+    request.headers.set('Origin', request.headers.get('X-Origin'));
+    request.headers.delete('X-Origin');
+  }
 
   // Set PHPSESSID cookie
   if (request.headers.get('PHPSESSID')) {
     request.headers.set(
       'Cookie',
-      `PHPSESSID=${request.headers.get('PHPSESSID')};`,
+      `PHPSESSID=${request.headers.get('PHPSESSID')}`,
     );
   }
 
-  // Set User Agent
-  request.headers.set(
-    'User-Agent',
-    ' Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0',
-  );
+  // Set User Agent, if not exists
+  const useragent = request.headers.get('User-Agent');
+  if (!useragent) {
+    request.headers.set(
+      'User-Agent',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0',
+    );
+  }
 
-  let response = await fetch(request);
+  // Fetch the new resource
+  const oResponse = await fetch(request);
 
+  // If the server returned a redirect, follow it
   if (
-    (response.status === 302 || response.status === 301) &&
-    response.headers.get('location')
+    (oResponse.status === 302 || oResponse.status === 301) &&
+    oResponse.headers.get('location')
   ) {
+    // Server tried to redirect too many times
     if (iteration > 5) {
-      event.respondWith(
+      return event.respondWith(
         new Response('418 Too many redirects', {
           status: 418,
         }),
       );
     }
 
+    // Handle and return the request for the redirected destination
     return await handleRequest(
       request,
-      response.headers.get('location'),
+      oResponse.headers.get('location'),
       iteration + 1,
     );
   }
 
-  // Recreate the response so we can modify the headers
-  response = new Response(response.body, response);
+  // Create mutable response using the original response as init
+  const response = new Response(oResponse.body, oResponse);
 
   // Set CORS headers
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Expose-Headers', '*');
 
-  // Get and set PHPSESSID cookie
-  const cookies = response.headers.get('Set-Cookie');
-  if (cookies && cookies.includes('PHPSESSID') && cookies.includes(';')) {
+  const cookiesToSet = response.headers.get('Set-Cookie');
+
+  // Transfer Set-Cookie to X-Set-Cookie
+  // Normally the Set-Cookie header is not accessible to fetch clients
+  if (cookiesToSet) {
+    response.headers.set('X-Set-Cookie', response.headers.get('Set-Cookie'));
+  }
+
+  // Set PHPSESSID cookie
+  if (
+    cookiesToSet &&
+    cookiesToSet.includes('PHPSESSID') &&
+    cookiesToSet.includes(';')
+  ) {
     let phpsessid = cookies.slice(cookies.search('PHPSESSID') + 10);
     phpsessid = phpsessid.slice(0, phpsessid.search(';'));
+
     response.headers.set('PHPSESSID', phpsessid);
   }
 
@@ -76,14 +110,19 @@ async function handleRequest(request, destinationUrl, iteration = 0) {
 function handleOptions(request) {
   // Make sure the necessary headers are present
   // for this to be a valid pre-flight request
-  let headers = request.headers;
+  const headers = request.headers;
+  let response = new Response(null, {
+    headers: {
+      Allow: 'GET, HEAD, POST, OPTIONS',
+    },
+  });
 
   if (
     headers.get('Origin') !== null &&
     headers.get('Access-Control-Request-Method') !== null &&
     headers.get('Access-Control-Request-Headers') !== null
   ) {
-    return new Response(null, {
+    response = new Response(null, {
       headers: {
         ...corsHeaders,
         // Allow all future content Request headers to go back to browser
@@ -93,48 +132,41 @@ function handleOptions(request) {
         ),
       },
     });
-  } else {
-    // Handle standard OPTIONS request
-    return new Response(null, {
-      headers: {
-        Allow: 'GET, HEAD, POST, OPTIONS',
-      },
-    });
   }
+
+  return response;
 }
 
 addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
-  const destinationUrl = url.searchParams.get('destination');
+  const destination = url.searchParams.get('destination');
 
   console.log(`HTTP ${request.method} - ${request.url}`);
 
+  let response = new Response('404 Not Found', {
+    status: 404,
+  });
+
   if (request.method === 'OPTIONS') {
     // Handle CORS preflight requests
-    event.respondWith(handleOptions(request));
-  } else if (!destinationUrl) {
-    event.respondWith(
-      new Response('200 OK', {
-        status: 200,
-        headers: {
-          Allow: 'GET, HEAD, POST, OPTIONS',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }),
-    );
+    response = handleOptions(request);
+  } else if (!destination) {
+    response = new Response('200 OK', {
+      status: 200,
+      headers: {
+        Allow: 'GET, HEAD, POST, OPTIONS',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   } else if (
     request.method === 'GET' ||
     request.method === 'HEAD' ||
     request.method === 'POST'
   ) {
     // Handle request
-    event.respondWith(handleRequest(request, destinationUrl));
-  } else {
-    event.respondWith(
-      new Response('404 Not Found', {
-        status: 404,
-      }),
-    );
+    response = handleRequest(request, destination);
   }
+
+  event.respondWith(response);
 });
