@@ -50,7 +50,7 @@ async function handleRequest(oRequest, destination, iteration = 0) {
   }
 
   // Fetch the new resource
-  const oResponse = await fetch(request);
+  const oResponse = await fetch(request.clone());
 
   // If the server returned a redirect, follow it
   if (
