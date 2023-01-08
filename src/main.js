@@ -17,6 +17,10 @@ async function handleRequest(request, destinationUrl, iteration = 0) {
   request = new Request(destinationUrl, request);
   request.headers.set('Origin', new URL(destinationUrl).origin);
 
+  // Set cookies when passed in as X-Cookie
+  if (request.headers.has('X-Cookie'))
+    request.headers.set('Cookie', request.headers.get('X-Cookie'));
+
   // Set PHPSESSID cookie
   if (request.headers.get('PHPSESSID')) {
     request.headers.set(
@@ -58,6 +62,10 @@ async function handleRequest(request, destinationUrl, iteration = 0) {
   // Set CORS headers
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Expose-Headers', '*');
+
+  // Transfer to Set-Cookie to X-Set-Cookie so client can read it
+  if (response.headers.has('Set-Cookie'))
+    response.headers.set('X-Set-Cookie', response.headers.get('Set-Cookie'));
 
   // Get and set PHPSESSID cookie
   const cookies = response.headers.get('Set-Cookie');
