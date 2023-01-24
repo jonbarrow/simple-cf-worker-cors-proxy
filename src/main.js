@@ -93,7 +93,7 @@ async function handleRequest(oRequest, destination, iteration = 0) {
     cookiesToSet.includes('PHPSESSID') &&
     cookiesToSet.includes(';')
   ) {
-    let phpsessid = cookies.slice(cookies.search('PHPSESSID') + 10);
+    let phpsessid = cookiesToSet.slice(cookiesToSet.search('PHPSESSID') + 10);
     phpsessid = phpsessid.slice(0, phpsessid.search(';'));
 
     response.headers.set('PHPSESSID', phpsessid);
