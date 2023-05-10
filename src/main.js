@@ -102,6 +102,9 @@ async function handleRequest(oRequest, destination, iteration = 0) {
   // Append to/Add Vary header so browser will cache response correctly
   response.headers.append('Vary', 'Origin');
 
+  // Add X-Final-Destination header to get the final url
+  response.headers.set('X-Final-Destination', oResponse.url);
+
   return response;
 }
 
