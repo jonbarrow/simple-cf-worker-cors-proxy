@@ -183,7 +183,6 @@ export default defineEventHandler(async (event) => {
     body = await readRawBody(event);
   } catch (err) {
     body = null;
-    console.log(err);
   }
 
   if (isMethod(event, "OPTIONS")) {
