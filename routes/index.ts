@@ -34,7 +34,9 @@ async function handleRequest(
     method: requestData.method,
     body: requestData.body,
   });
+
   request.headers.set("Origin", new URL(requestData.destination).origin);
+  request.headers.set("Host", new URL(requestData.destination).host);
 
   // TODO: Make cookie handling better. PHPSESSID overwrites all other cookie related headers
 
