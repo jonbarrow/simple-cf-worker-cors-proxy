@@ -1,17 +1,46 @@
-# Docs: https://github.com/marketplace/actions/deploy-to-cloudflare-workers-with-wrangler
-name: Deploy Worker
+name: cloudflare
+
 on:
   push:
+    branches:
+      - main
   pull_request:
-  repository_dispatch:
+    branches:
+      - main
+
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+  ci:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        node: [ 14 ]
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Build & Deploy Worker
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn
+
+      - name: Build
+        run: yarn build
+        env:
+          NITRO_PRESET: cloudflare
+
+      - name: Publish to Cloudflare
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
