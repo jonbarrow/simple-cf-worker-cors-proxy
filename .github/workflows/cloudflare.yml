@@ -2,11 +2,8 @@ name: cloudflare
 
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
+  repository_dispatch:
 
 jobs:
   ci:
