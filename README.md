@@ -1,42 +1,15 @@
-# Nitro Minimal Starter
+# CORS proxy
 
-Look at the [Nitro documentation](https://nitro.unjs.io/) to learn more.
+A CORS proxy used to bypass the CORS policy within the [movie-web](https://movie-web.app) app.
 
-## Setup
+## Deployment
 
-Make sure to install the dependencies:
+Because [Nitro](https://nitro.unjs.io/) allows users to servers on multiple runtimes, we have provided a few buttons to help you deploy this example to your favorite provider. However, [Cloudflare workers](https://workers.cloudflare.com/) remain the recommended option because of their large IP range and generous free tier.
 
-```bash
-# npm
-npm install
+For more information on how to deploy this example to your provider of choice, please refer to the [Nitro documentation](https://nitro.unjs.io/docs/deployment).
 
-# yarn
-yarn install
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/movie-web/simple-proxy)
 
-# pnpm
-pnpm install
-```
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmovie-web%2Fsimple-proxy)
 
-## Development Server
-
-Start the development server on <http://localhost:3000>
-
-```bash
-npm run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-npm run build
-```
-
-Locally preview production build:
-
-```bash
-npm run preview
-```
-
-Check out the [deployment documentation](https://nitro.unjs.io/deploy) for more information.
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/movie-web/simple-proxy)

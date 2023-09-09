@@ -1,61 +1,34 @@
-import {
-  defineEventHandler,
-  EventHandlerRequest,
-  readBody,
-  getQuery,
-  isMethod,
-  H3Event,
-} from 'h3';
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
   'Access-Control-Max-Age': '86400',
 };
 
-async function handleRequest(
-  requestData: {
-    headers: Headers;
-    method: string;
-    body: any;
-    destination: string;
-  },
-  iteration = 0,
-): Promise<Response> {
+ function handleRequest(oRequest, destination, iteration = 0) {
   console.log(
-    `PROXYING ${requestData.destination}${
-      iteration ? ' ON ITERATION ' + iteration : ''
-    }`,
+    `PROXYING ${destination}${iteration ? ' ON ITERATION ' + iteration : ''}`,
   );
 
   // Create a new mutable request object for the destination
-  const request = new Request(requestData.destination, {
-    headers: requestData.headers,
-    method: requestData.method,
-    body: requestData.body,
-  });
-  request.headers.set('Origin', new URL(requestData.destination).origin);
+  const request = new Request(destination, oRequest);
+  request.headers.set('Origin', new URL(destination).origin);
 
-  // TODO: Make cookie handling better. PHPSESSID overwrites all other cookie related headers
+  // TODO - Make cookie handling better. PHPSESSID overwrites all other cookie related headers
 
   // Add custom X headers from client
   // These headers are usually forbidden to be set by fetch
-
-  const cookieValue = request.headers.get('X-Cookie');
-  if (cookieValue) {
-    request.headers.set('Cookie', cookieValue);
+  if (oRequest.headers.has('X-Cookie')) {
+    request.headers.set('Cookie', oRequest.headers.get('X-Cookie'));
     request.headers.delete('X-Cookie');
   }
 
-  const refererValue = request.headers.get('X-Referer');
-  if (refererValue) {
-    request.headers.set('Referer', refererValue);
+  if (request.headers.has('X-Referer')) {
+    request.headers.set('Referer', request.headers.get('X-Referer'));
     request.headers.delete('X-Referer');
   }
 
-  const originValue = request.headers.get('X-Origin');
-  if (originValue) {
-    request.headers.set('Origin', originValue);
+  if (request.headers.has('X-Origin')) {
+    request.headers.set('Origin', request.headers.get('X-Origin'));
     request.headers.delete('X-Origin');
   }
 
@@ -68,8 +41,8 @@ async function handleRequest(
   }
 
   // Set User Agent, if not exists
-  const userAgent = request.headers.get('User-Agent');
-  if (!userAgent) {
+  const useragent = request.headers.get('User-Agent');
+  if (!useragent) {
     request.headers.set(
       'User-Agent',
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0',
@@ -80,9 +53,10 @@ async function handleRequest(
   const oResponse = await fetch(request.clone());
 
   // If the server returned a redirect, follow it
-  const locationValue = oResponse.headers.get('location');
-
-  if ((oResponse.status === 302 || oResponse.status === 301) && locationValue) {
+  if (
+    (oResponse.status === 302 || oResponse.status === 301) &&
+    oResponse.headers.get('location')
+  ) {
     // Server tried to redirect too many times
     if (iteration > 5) {
       return new Response('418 Too many redirects', {
@@ -92,12 +66,8 @@ async function handleRequest(
 
     // Handle and return the request for the redirected destination
     return await handleRequest(
-      {
-        headers: oResponse.headers,
-        method: requestData.method,
-        body: requestData.body,
-        destination: locationValue,
-      },
+      request,
+      oResponse.headers.get('location'),
       iteration + 1,
     );
   }
@@ -113,10 +83,8 @@ async function handleRequest(
 
   // Transfer Set-Cookie to X-Set-Cookie
   // Normally the Set-Cookie header is not accessible to fetch clients
-
-  const setCookieValue = response.headers.get('Set-Cookie');
-  if (cookiesToSet && setCookieValue) {
-    response.headers.set('X-Set-Cookie', setCookieValue);
+  if (cookiesToSet) {
+    response.headers.set('X-Set-Cookie', response.headers.get('Set-Cookie'));
   }
 
   // Set PHPSESSID cookie
@@ -140,7 +108,7 @@ async function handleRequest(
   return response;
 }
 
-function handleOptions(request: H3Event<EventHandlerRequest>) {
+function handleOptions(request) {
   // Make sure the necessary headers are present
   // for this to be a valid pre-flight request
   const headers = request.headers;
@@ -155,15 +123,14 @@ function handleOptions(request: H3Event<EventHandlerRequest>) {
     headers.get('Access-Control-Request-Method') !== null &&
     headers.get('Access-Control-Request-Headers') !== null
   ) {
-    let accessControlRequestValue = headers.get(
-      'Access-Control-Request-Headers',
-    );
     response = new Response(null, {
       headers: {
         ...corsHeaders,
         // Allow all future content Request headers to go back to browser
         // such as Authorization (Bearer) or X-Client-Name-Version
-        accessControlRequestValue: accessControlRequestValue || '',
+        'Access-Control-Allow-Headers': request.headers.get(
+          'Access-Control-Request-Headers',
+        ),
       },
     });
   }
@@ -171,24 +138,21 @@ function handleOptions(request: H3Event<EventHandlerRequest>) {
   return response;
 }
 
-export default defineEventHandler(async (event) => {
-  const destination = getQuery(event).destination;
+addEventListener('fetch', (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  const destination = url.searchParams.get('destination');
+
+  console.log(`HTTP ${request.method} - ${request.url}`);
 
   let response = new Response('404 Not Found', {
     status: 404,
   });
 
-  let body;
-  try {
-    body = await readBody(event);
-  } catch {
-    body = null;
-  }
-
-  if (isMethod(event, 'OPTIONS')) {
+  if (request.method === 'OPTIONS') {
     // Handle CORS preflight requests
-    response = handleOptions(event);
-  } else if (!destination?.toString()) {
+    response = handleOptions(request);
+  } else if (!destination) {
     response = new Response('200 OK', {
       status: 200,
       headers: {
@@ -197,18 +161,13 @@ export default defineEventHandler(async (event) => {
       },
     });
   } else if (
-    isMethod(event, 'GET') ||
-    isMethod(event, 'HEAD') ||
-    isMethod(event, 'POST')
+    request.method === 'GET' ||
+    request.method === 'HEAD' ||
+    request.method === 'POST'
   ) {
     // Handle request
-    response = await handleRequest({
-      headers: event.headers,
-      method: event.method,
-      destination: destination.toString(),
-      body,
-    });
+    response = handleRequest(request, destination);
   }
 
-  return response;
+  event.respondWith(response);
 });
