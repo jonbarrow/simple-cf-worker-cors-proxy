@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import {
   defineEventHandler,
   EventHandlerRequest,
@@ -33,6 +34,7 @@ async function handleRequest(
     headers: requestData.headers,
     method: requestData.method,
     body: requestData.body,
+    redirect: "manual",
   });
 
   request.headers.set("Origin", new URL(requestData.destination).origin);
