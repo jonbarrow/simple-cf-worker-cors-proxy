@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "eslint-plugin-prettier": "^5.0.0",
-    "nitropack": "latest",
-    "node-fetch": "^3.3.2"
+    "nitropack": "latest"
   },
   "devDependencies": {
     "eslint": "^8.48.0",
