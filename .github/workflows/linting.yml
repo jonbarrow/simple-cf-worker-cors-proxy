@@ -1,0 +1,52 @@
+name: Linting and Testing
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+
+jobs:
+  linting:
+    name: Run Linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install npm packages
+        run: npm install
+
+      - name: Prepare for linting
+        run: npm run prepare
+
+      - name: Run ESLint
+        run: npm lint
+
+  building:
+    name: Build project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      
+      - name: Install npm packages
+        run: npm install
+
+      - name: Build Project
+        run: npm build

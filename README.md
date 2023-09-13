@@ -10,3 +10,8 @@ features:
 supported platforms:
  - cloudflare workers
  - nodejs
+
+## Todos:
+ - [ ] release with multi platform
+ - [ ] Easy deploy to cloudflare button (just needs CI)
+ - [ ] Test on cloudflare
