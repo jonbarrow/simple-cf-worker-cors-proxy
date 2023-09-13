@@ -29,7 +29,7 @@ jobs:
         run: npm run prepare
 
       - name: Run ESLint
-        run: npm lint
+        run: npm run lint
 
   building:
     name: Build project
@@ -49,4 +49,4 @@ jobs:
         run: npm install
 
       - name: Build Project
-        run: npm build
+        run: npm run build
