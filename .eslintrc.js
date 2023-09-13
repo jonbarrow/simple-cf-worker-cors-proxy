@@ -3,8 +3,6 @@ module.exports = {
     browser: true,
   },
   extends: [
-    "airbnb",
-    "airbnb/hooks",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
   ],
