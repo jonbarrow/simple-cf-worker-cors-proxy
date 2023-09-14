@@ -11,9 +11,11 @@
     "build:node": "NITRO_PRESET=node-server npm run build",
     "start": "node .output/server/index.mjs",
     "lint": "eslint --ext .ts src/",
-    "lint:fix": "eslint --fix --ext .ts src/"
+    "lint:fix": "eslint --fix --ext .ts src/",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
+    "h3": "^1.8.1",
     "nitropack": "latest"
   },
   "devDependencies": {

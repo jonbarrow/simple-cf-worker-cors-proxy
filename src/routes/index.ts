@@ -1,4 +1,4 @@
-import { getProxyHeaders, getAfterResponseHeaders } from '../utils/headers';
+import { getProxyHeaders, getAfterResponseHeaders } from '@/utils/headers';
 
 export default defineEventHandler(async (event) => {
   // handle cors, if applicable

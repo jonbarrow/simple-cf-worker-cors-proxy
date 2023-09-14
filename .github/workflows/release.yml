@@ -11,67 +11,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - uses: pnpm/action-setup@v2
 
-    - name: Get version
-      id: package-version
-      uses: martinbeentjes/npm-get-version-action@main
+      - name: Get version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
 
-    - name: Install npm packages
-      run: npm install
+      - name: Install packages
+        run: pnpm install --frozen-lockfile
 
-    - name: Build for cloudflare
-      run: npm run build:cloudflare && cp ./.output/server/index.mjs ./cloudflare.worker.mjs
+      - name: Build for cloudflare
+        run: pnpm build:cloudflare && cp ./.output/server/index.mjs ./cloudflare.worker.mjs
 
-    - name: Build for AWS
-      run: npm run build:aws && cd .output/server && zip -r ../../lambda.zip .
+      - name: Build for AWS
+        run: pnpm build:aws && cd .output/server && zip -r ../../lambda.zip .
 
-    - name: Build for Node
-      run: npm run build:node && cd .output/server && zip -r ../../nodejs.zip .
+      - name: Build for Node
+        run: pnpm build:node && cd .output/server && zip -r ../../nodejs.zip .
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.package-version.outputs.current-version }}
-        release_name: Bot v${{ steps.package-version.outputs.current-version }}
-        draft: false
-        prerelease: false
-        body: |
-          Instead of downloading a package, you can also run it in docker:
-          ```sh
-          docker run movie-web/simple-proxy:${{ steps.package-version.outputs.current-version }}
-          ```
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.package-version.outputs.current-version }}
+          release_name: Bot v${{ steps.package-version.outputs.current-version }}
+          draft: false
+          prerelease: false
+          body: |
+            Instead of downloading a package, you can also run it in docker:
+            ```sh
+            docker run movie-web/simple-proxy:${{ steps.package-version.outputs.current-version }}
+            ```
 
-    - name: Upload cloudflare build
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./cloudflare.worker.mjs
-        asset_name: simple-proxy-cloudflare.mjs
-        asset_content_type: text/javascript
+      - name: Upload cloudflare build
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./cloudflare.worker.mjs
+          asset_name: simple-proxy-cloudflare.mjs
+          asset_content_type: text/javascript
 
-    - name: Upload AWS build
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./lambda.zip
-        asset_name: simple-proxy-aws-lambda.zip
-        asset_content_type: application/zip
+      - name: Upload AWS build
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./lambda.zip
+          asset_name: simple-proxy-aws-lambda.zip
+          asset_content_type: application/zip
 
-    - name: Upload Node build
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./node.zip
-        asset_name: simple-proxy-nodejs.zip
-        asset_content_type: application/zip
+      - name: Upload Node build
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./node.zip
+          asset_name: simple-proxy-nodejs.zip
+          asset_content_type: application/zip
