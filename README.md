@@ -15,8 +15,3 @@ Simple reverse proxy to bypass CORS, used by [movie-web](https://movie-web.app).
  - cloudflare workers
  - AWS lambda
  - nodejs
-
-## Todos:
- - [ ] release with multi platform
- - [ ] Easy deploy to cloudflare button (just needs CI)
- - [ ] Test on cloudflare
