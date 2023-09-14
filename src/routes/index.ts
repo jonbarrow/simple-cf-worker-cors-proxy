@@ -6,7 +6,14 @@ export default defineEventHandler(async (event) => {
 
   // parse destination URL
   const destination = getQuery<{ destination?: string }>(event).destination;
-  if (!destination) throw new Error('invalid destination');
+  if (!destination)
+    return sendJson({
+      event,
+      status: 400,
+      data: {
+        error: 'destination query parameter invalid',
+      },
+    });
 
   // proxy
   await proxyRequest(event, destination, {
