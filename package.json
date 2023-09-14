@@ -6,6 +6,9 @@
     "prepare": "nitropack prepare",
     "dev": "nitropack dev",
     "build": "nitropack build",
+    "build:cloudflare": "NITRO_PRESET=cloudflare npm run build",
+    "build:aws": "NITRO_PRESET=aws_lambda npm run build",
+    "build:node": "NITRO_PRESET=node-server npm run build",
     "start": "node .output/server/index.mjs",
     "lint": "eslint --ext .js src/",
     "lint:fix": "eslint --fix --ext .js src/"
