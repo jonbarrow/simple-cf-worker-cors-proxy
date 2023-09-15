@@ -15,21 +15,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+        
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: 'pnpm'
 
-      - name: Install npm packages
-        run: npm install
+      - name: Install packages
+        run: pnpm install --frozen-lockfile
 
       - name: Prepare for linting
-        run: npm run prepare
+        run: pnpm prepare
 
       - name: Run ESLint
-        run: npm run lint
+        run: pnpm lint
 
   building:
     name: Build project
@@ -38,15 +42,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
       
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: 'pnpm'
       
-      - name: Install npm packages
-        run: npm install
+      - name: Install pnpm packages
+        run: pnpm install --frozen-lockfile
 
       - name: Build Project
-        run: npm run build
+        run: pnpm build

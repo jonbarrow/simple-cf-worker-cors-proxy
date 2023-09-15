@@ -4,10 +4,11 @@ WORKDIR /app
 # Build layer
 FROM base as build
 
-COPY package-lock.json package.json ./
-RUN npm install --frozen-lockfile
+RUN npm i -g pnpm
+COPY pnpm-lock.yaml package.json ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 # Production layer
 FROM base as production
