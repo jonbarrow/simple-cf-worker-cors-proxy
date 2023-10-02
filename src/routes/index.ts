@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     },
     onResponse(outputEvent, response) {
       const headers = getAfterResponseHeaders(response.headers, response.url);
-      appendResponseHeaders(outputEvent, headers);
+      setResponseHeaders(outputEvent, headers);
     },
   });
 });
