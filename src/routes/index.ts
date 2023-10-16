@@ -1,3 +1,4 @@
+import { getBodyBuffer } from '@/utils/body';
 import {
   getProxyHeaders,
   getAfterResponseHeaders,
@@ -11,7 +12,7 @@ export default defineEventHandler(async (event) => {
   // parse destination URL
   const destination = getQuery<{ destination?: string }>(event).destination;
   if (!destination)
-    return sendJson({
+    return await sendJson({
       event,
       status: 400,
       data: {
@@ -19,12 +20,16 @@ export default defineEventHandler(async (event) => {
       },
     });
 
+  // read body
+  const body = await getBodyBuffer(event);
+
   // proxy
   cleanupHeadersBeforeProxy(event);
   await proxyRequest(event, destination, {
     fetchOptions: {
       redirect: 'follow',
       headers: getProxyHeaders(event.headers),
+      body,
     },
     onResponse(outputEvent, response) {
       const headers = getAfterResponseHeaders(response.headers, response.url);
