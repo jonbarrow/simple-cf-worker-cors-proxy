@@ -1,3 +1,13 @@
+import { H3Event } from 'h3';
+
+const blacklistedHeaders = [
+  'cf-connecting-ip',
+  'cf-worker',
+  'cf-ray',
+  'cf-visitor',
+  'cf-ew-via',
+];
+
 function copyHeader(
   headers: Headers,
   outputHeaders: Headers,
@@ -43,4 +53,16 @@ export function getAfterResponseHeaders(
     Vary: 'Origin',
     'X-Final-Destination': finalUrl,
   };
+}
+
+export function removeHeadersFromEvent(event: H3Event, key: string) {
+  const normalizedKey = key.toLowerCase();
+  if (event.node.req.headers[normalizedKey])
+    delete event.node.req.headers[normalizedKey];
+}
+
+export function cleanupHeadersBeforeProxy(event: H3Event) {
+  blacklistedHeaders.forEach((key) => {
+    removeHeadersFromEvent(event, key);
+  });
 }

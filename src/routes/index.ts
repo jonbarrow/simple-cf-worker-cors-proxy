@@ -1,4 +1,8 @@
-import { getProxyHeaders, getAfterResponseHeaders } from '@/utils/headers';
+import {
+  getProxyHeaders,
+  getAfterResponseHeaders,
+  cleanupHeadersBeforeProxy,
+} from '@/utils/headers';
 
 export default defineEventHandler(async (event) => {
   // handle cors, if applicable
@@ -16,6 +20,7 @@ export default defineEventHandler(async (event) => {
     });
 
   // proxy
+  cleanupHeadersBeforeProxy(event);
   await proxyRequest(event, destination, {
     fetchOptions: {
       redirect: 'follow',
