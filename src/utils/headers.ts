@@ -6,6 +6,11 @@ const blacklistedHeaders = [
   'cf-ray',
   'cf-visitor',
   'cf-ew-via',
+  'x-forwarded-for',
+  'x-forwarded-host',
+  'x-forwarded-proto',
+  'forwarded',
+  'x-real-ip',
 ];
 
 function copyHeader(
