@@ -47,7 +47,7 @@ jobs:
           body: |
             Instead of downloading a package, you can also run it in docker:
             ```sh
-            docker pull ghcr.io/movie-web/simple-proxy:${{ steps.package-version.outputs.current-version }}
+            docker run ghcr.io/movie-web/simple-proxy:${{ steps.package-version.outputs.current-version }}
             ```
 
       - name: Upload cloudflare build
