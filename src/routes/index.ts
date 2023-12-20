@@ -4,6 +4,11 @@ import {
   getAfterResponseHeaders,
   cleanupHeadersBeforeProxy,
 } from '@/utils/headers';
+import {
+  createTokenIfNeeded,
+  isAllowedToMakeRequest,
+  setTokenHeader,
+} from '@/utils/turnstile';
 
 export default defineEventHandler(async (event) => {
   // handle cors, if applicable
@@ -14,14 +19,24 @@ export default defineEventHandler(async (event) => {
   if (!destination)
     return await sendJson({
       event,
-      status: 400,
+      status: 200,
       data: {
-        error: 'destination query parameter invalid',
+        error: 'Proxy is working as expected',
+      },
+    });
+
+  if (!(await isAllowedToMakeRequest(event)))
+    return await sendJson({
+      event,
+      status: 401,
+      data: {
+        error: 'Invalid or missing token',
       },
     });
 
   // read body
   const body = await getBodyBuffer(event);
+  const token = await createTokenIfNeeded(event);
 
   // proxy
   cleanupHeadersBeforeProxy(event);
@@ -34,6 +49,7 @@ export default defineEventHandler(async (event) => {
     onResponse(outputEvent, response) {
       const headers = getAfterResponseHeaders(response.headers, response.url);
       setResponseHeaders(outputEvent, headers);
+      if (token) setTokenHeader(event, token);
     },
   });
 });
