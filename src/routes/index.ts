@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
       event,
       status: 200,
       data: {
-        error: 'Proxy is working as expected',
+        message: 'Proxy is working as expected',
       },
     });
 
