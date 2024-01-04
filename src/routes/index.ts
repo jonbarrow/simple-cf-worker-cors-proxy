@@ -2,7 +2,7 @@ import { getBodyBuffer } from '@/utils/body';
 import {
   getProxyHeaders,
   getAfterResponseHeaders,
-  cleanupHeadersBeforeProxy,
+  getBlacklistedHeaders,
 } from '@/utils/headers';
 import {
   createTokenIfNeeded,
@@ -39,8 +39,8 @@ export default defineEventHandler(async (event) => {
   const token = await createTokenIfNeeded(event);
 
   // proxy
-  cleanupHeadersBeforeProxy(event);
-  await proxyRequest(event, destination, {
+  await specificProxyRequest(event, destination, {
+    blacklistedHeaders: getBlacklistedHeaders(),
     fetchOptions: {
       redirect: 'follow',
       headers: getProxyHeaders(event.headers),
