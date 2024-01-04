@@ -11,6 +11,7 @@ const blacklistedHeaders = [
   'x-forwarded-proto',
   'forwarded',
   'x-real-ip',
+  'user-agent',
 ];
 
 function copyHeader(
@@ -26,7 +27,7 @@ function copyHeader(
 export function getProxyHeaders(headers: Headers): Headers {
   const output = new Headers();
 
-  // default user-agent
+  // default user agent
   output.set(
     'User-Agent',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0',
