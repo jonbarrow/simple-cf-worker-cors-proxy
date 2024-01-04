@@ -1,5 +1,5 @@
 import { H3Event, EventHandlerRequest } from 'h3';
-import jsonwebtoken from '@tsndr/cloudflare-worker-jwt';
+import { SignJWT, jwtVerify } from 'jose';
 import { getIp } from '@/utils/ip';
 
 const turnstileSecret = process.env.TURNSTILE_SECRET ?? null;
@@ -15,13 +15,10 @@ export function isTurnstileEnabled() {
 
 export async function makeToken(ip: string) {
   if (!jwtSecret) throw new Error('Cannot make token without a secret');
-  return await jsonwebtoken.sign(
-    {
-      ip,
-      exp: Math.floor(Date.now() / 1000) + 60 * 10, // 10 Minutes
-    },
-    jwtSecret,
-  );
+  return await new SignJWT({ ip })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('10m')
+    .sign(new TextEncoder().encode(jwtSecret));
 }
 
 export function setTokenHeader(
@@ -54,13 +51,19 @@ export async function isAllowedToMakeRequest(
 
   if (token.startsWith(jwtPrefix)) {
     const jwtToken = token.slice(jwtPrefix.length);
-    const isValid = await jsonwebtoken.verify(jwtToken, jwtSecret, {
-      algorithm: 'HS256',
-    });
-    if (!isValid) return false;
-    const jwtBody = jsonwebtoken.decode<{ ip: string }>(jwtToken);
-    if (!jwtBody.payload) return false;
-    if (getIp(event) !== jwtBody.payload.ip) return false;
+    let jwtPayload: { ip: string } | null = null;
+    try {
+      const jwtResult = await jwtVerify<{ ip: string }>(
+        jwtToken,
+        new TextEncoder().encode(jwtSecret),
+        {
+          algorithms: ['HS256'],
+        },
+      );
+      jwtPayload = jwtResult.payload;
+    } catch {}
+    if (!jwtPayload) return false;
+    if (getIp(event) !== jwtPayload.ip) return false;
     return true;
   }
 

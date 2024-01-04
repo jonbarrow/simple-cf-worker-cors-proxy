@@ -5,12 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@tsndr/cloudflare-worker-jwt':
-    specifier: ^2.3.2
-    version: 2.3.2
   h3:
     specifier: ^1.8.1
     version: 1.8.1
+  jose:
+    specifier: ^5.2.0
+    version: 5.2.0
   nitropack:
     specifier: latest
     version: 2.6.3
@@ -702,10 +702,6 @@ packages:
       estree-walker: 2.0.2
       picomatch: 2.3.1
       rollup: 3.29.1
-    dev: false
-
-  /@tsndr/cloudflare-worker-jwt@2.3.2:
-    resolution: {integrity: sha512-g1jSm5olPqKh15kadnj0666YPudibHYGyFyM0URLXSeY5MzNIGkfhFedLgKHq8NCDBMzLUMX7Oz8d+jmQXqBuw==}
     dev: false
 
   /@types/estree@1.0.1:
@@ -2535,6 +2531,10 @@ packages:
   /jiti@1.20.0:
     resolution: {integrity: sha512-3TV69ZbrvV6U5DfQimop50jE9Dl6J8O1ja1dvBbMba/sZ3YBEQqJ2VZRoQPVnhlzjNtU1vaXRZVrVjU4qtm8yA==}
     hasBin: true
+    dev: false
+
+  /jose@5.2.0:
+    resolution: {integrity: sha512-oW3PCnvyrcm1HMvGTzqjxxfnEs9EoFOFWi2HsEGhlFVOXxTE3K9GKWVMFoFw06yPUqwpvEWic1BmtUZBI/tIjw==}
     dev: false
 
   /js-yaml@4.1.0:
