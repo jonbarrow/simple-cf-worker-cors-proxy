@@ -69,7 +69,15 @@ export async function specificProxyRequest(
     opts.fetchOptions?.headers,
     opts.headers,
   );
-  (fetchHeaders.forEach as any)(console.log);
+  const headerObj = Object.fromEntries([...(fetchHeaders.entries as any)()]);
+  if (process.env.REQ_DEBUG === 'true') {
+    console.log({
+      type: 'request',
+      method,
+      url: target,
+      headers: headerObj,
+    });
+  }
 
   return sendProxy(event, target, {
     ...opts,
