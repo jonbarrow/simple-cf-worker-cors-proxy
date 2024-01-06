@@ -41,17 +41,22 @@ export default defineEventHandler(async (event) => {
   const token = await createTokenIfNeeded(event);
 
   // proxy
-  await specificProxyRequest(event, destination, {
-    blacklistedHeaders: getBlacklistedHeaders(),
-    fetchOptions: {
-      redirect: 'follow',
-      headers: getProxyHeaders(event.headers),
-      body,
-    },
-    onResponse(outputEvent, response) {
-      const headers = getAfterResponseHeaders(response.headers, response.url);
-      setResponseHeaders(outputEvent, headers);
-      if (token) setTokenHeader(event, token);
-    },
-  });
+  try {
+    await specificProxyRequest(event, destination, {
+      blacklistedHeaders: getBlacklistedHeaders(),
+      fetchOptions: {
+        redirect: 'follow',
+        headers: getProxyHeaders(event.headers),
+        body,
+      },
+      onResponse(outputEvent, response) {
+        const headers = getAfterResponseHeaders(response.headers, response.url);
+        setResponseHeaders(outputEvent, headers);
+        if (token) setTokenHeader(event, token);
+      },
+    });
+  } catch (e) {
+    console.log('Error fetching', e);
+    throw e;
+  }
 });
