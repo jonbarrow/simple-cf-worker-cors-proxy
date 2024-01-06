@@ -1,4 +1,10 @@
-import { H3Event } from 'h3';
+const headerMap: Record<string, string> = {
+  'X-Cookie': 'Cookie',
+  'X-Referer': 'Referer',
+  'X-Origin': 'Origin',
+  'X-User-Agent': 'User-Agent',
+  'X-X-Real-Ip': 'X-Real-Ip',
+};
 
 const blacklistedHeaders = [
   'cf-connecting-ip',
@@ -11,6 +17,7 @@ const blacklistedHeaders = [
   'x-forwarded-proto',
   'forwarded',
   'x-real-ip',
+  ...Object.keys(headerMap),
 ];
 
 function copyHeader(
@@ -26,19 +33,15 @@ function copyHeader(
 export function getProxyHeaders(headers: Headers): Headers {
   const output = new Headers();
 
-  const headerMap: Record<string, string> = {
-    'X-Cookie': 'Cookie',
-    'X-Referer': 'Referer',
-    'X-Origin': 'Origin',
-  };
-  Object.entries(headerMap).forEach((entry) => {
-    copyHeader(headers, output, entry[0], entry[1]);
-  });
-
+  // default user agent
   output.set(
     'User-Agent',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0',
   );
+
+  Object.entries(headerMap).forEach((entry) => {
+    copyHeader(headers, output, entry[0], entry[1]);
+  });
 
   return output;
 }
@@ -60,14 +63,6 @@ export function getAfterResponseHeaders(
   };
 }
 
-export function removeHeadersFromEvent(event: H3Event, key: string) {
-  const normalizedKey = key.toLowerCase();
-  if (event.node.req.headers[normalizedKey])
-    delete event.node.req.headers[normalizedKey];
-}
-
-export function cleanupHeadersBeforeProxy(event: H3Event) {
-  blacklistedHeaders.forEach((key) => {
-    removeHeadersFromEvent(event, key);
-  });
+export function getBlacklistedHeaders() {
+  return blacklistedHeaders;
 }
