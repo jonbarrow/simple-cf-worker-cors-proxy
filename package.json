@@ -27,5 +27,10 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.0",
     "eslint-plugin-prettier": "^5.0.0"
+  },
+  "pnpm": {
+    "overides": {
+      "rollup": "@rollup/wasm-node"
+    }
   }
 }
