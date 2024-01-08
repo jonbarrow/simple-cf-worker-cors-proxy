@@ -18,3 +18,4 @@ Read the docs at https://docs.movie-web.app/proxy/introduction
  - cloudflare workers
  - AWS lambda
  - nodejs
+ - netlify edge functions
