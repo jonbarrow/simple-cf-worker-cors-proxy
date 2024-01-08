@@ -31,9 +31,6 @@ jobs:
       - name: Build for AWS
         run: pnpm build:aws && cd .output/server && zip -r ../../lambda.zip .
 
-      - name: Build for Netlify edge
-        run: pnpm build:netlify && cd .output/server && zip -r ../../netlify.zip .
-
       - name: Build for Node
         run: pnpm build:node && cd .output/server && zip -r ../../nodejs.zip .
 
@@ -71,16 +68,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./lambda.zip
           asset_name: simple-proxy-aws-lambda.zip
-          asset_content_type: application/zip
-
-      - name: Upload Netlify build
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./netlify.zip
-          asset_name: simple-proxy-netlify-edge.zip
           asset_content_type: application/zip
 
       - name: Upload Node build
