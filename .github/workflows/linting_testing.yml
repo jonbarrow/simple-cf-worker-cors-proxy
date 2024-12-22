@@ -5,8 +5,7 @@ on:
     branches:
       - master
       - dev
-  pull_request_target:
-    types: [opened, reopened, synchronize]
+  pull_request:
 
 jobs:
   linting:
@@ -15,28 +14,61 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install packages
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare for linting
+        run: pnpm prepare
+
+      - name: Run ESLint
+        run: pnpm lint
+
+  building:
+    name: Build project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
       
       - name: Install Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
+          cache: 'pnpm'
       
-      - name: Install NPM packages
-        run: npm install
-      
-      - name: Run ESLint Report
-        run: npm run lint:report
-        # continue on error, so it still reports it in the next step
-        continue-on-error: true
-
-      - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@v2
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          report-json: "eslint_report.json"
+      - name: Install pnpm packages
+        run: pnpm install --frozen-lockfile
 
       - name: Build Project
-        run: npm run build
+        run: pnpm build
 
-      
+  docker:
+    name: Build docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v5

@@ -1,18 +1,38 @@
 {
   "name": "simple-proxy",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.1.4",
   "scripts": {
-    "build": "vite build",
-    "lint": "eslint --ext .js src/",
-    "lint:fix": "eslint --fix --ext .js src/",
-    "lint:report": "eslint --ext .js --output-file eslint_report.json --format json src/"
+    "prepare": "nitropack prepare",
+    "dev": "nitropack dev",
+    "build": "nitropack build",
+    "build:cloudflare": "NITRO_PRESET=cloudflare npm run build",
+    "build:aws": "NITRO_PRESET=aws_lambda npm run build",
+    "build:node": "NITRO_PRESET=node-server npm run build",
+    "build:netlify": "NITRO_PRESET=netlify_edge npm run build",
+    "start": "node .output/server/index.mjs",
+    "lint": "eslint --ext .ts src/",
+    "lint:fix": "eslint --fix --ext .ts src/",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "dependencies": {
+    "h3": "^1.10.0",
+    "jose": "^5.2.0",
+    "nitropack": "^2.8.1"
   },
   "devDependencies": {
-    "eslint": "^8.30.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "vite": "^4.0.0",
-    "vite-plugin-eslint": "^1.8.1"
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.48.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-import-resolver-typescript": "^3.6.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "@rollup/wasm-node": "^4.9.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "rollup": "npm:@rollup/wasm-node"
+    }
   }
 }

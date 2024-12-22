@@ -1,0 +1,36 @@
+name: Deploy Worker
+
+# this action is for the "deploy to cloudflare" button
+# repository_dispatch is triggered by CF
+# secrets should also be made by CF
+
+on: ["repository_dispatch"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install packages
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Project
+        run: pnpm build:cloudflare
+
+      - name: Build & Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
